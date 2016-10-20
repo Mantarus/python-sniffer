@@ -1,83 +1,53 @@
-# Packet sniffer in python
-# For Linux
-
 import socket
 import sys
-
-# create an INET, raw socket
-from struct import unpack
-
 import itertools
+from networking.ethernet import Ethernet
+from networking.ipv4 import IPv4
+from networking.tcp import TCP
 
-try:
-    conn = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.ntohs(3))
-except socket.error as msg:
-    print('Socket could not be created. Error Code : ' + str(msg[0]) + ' Message ' + msg[1])
-    sys.exit()
+TAB_1 = '\t - '
+TAB_2 = '\t\t - '
+TAB_3 = '\t\t\t - '
+TAB_4 = '\t\t\t\t - '
 
-# receive a packet
-for cnt in itertools.count():
-#while True:
-    print("Recieve packet #" + str(cnt))
+DATA_TAB_1 = '\t   '
+DATA_TAB_2 = '\t\t   '
+DATA_TAB_3 = '\t\t\t   '
+DATA_TAB_4 = '\t\t\t\t   '
 
-    packet = conn.recvfrom(65565)
 
-    # packet string from tuple
-    packet = packet[0]
-
-    # take first 20 characters for the ip header
-    ip_header = packet[0:20]
-
-    # now unpack them :)
-    iph = unpack('!BBHHHBBH4s4s', ip_header)
-
-    version_ihl = iph[0]
-    version = version_ihl >> 4
-    ihl = version_ihl & 0xF
-
-    iph_length = ihl * 4
-
-    ttl = iph[5]
-    protocol = iph[6]
-    s_addr = socket.inet_ntoa(iph[8]);
-    d_addr = socket.inet_ntoa(iph[9]);
-
-    print("Version: " + str(version))
-    print("IP Header Length: " + str(ihl))
-    print("TTL: " + str(ttl))
-    print("Protocol: " + str(protocol))
-    print("Source Address: " + str(s_addr))
-    print("Destination Address: " + str(d_addr))
-    print()
-
-    tcp_header = packet[iph_length:iph_length + 20]
-    # now unpack them :)
+def main():
+    # create a AF_PACKET type raw socket (thats basically packet level)
+    # define ETH_P_ALL    0x0003          /* Every packet (be careful!!!) */
     try:
-        tcph = unpack('!HHLLBBHHH', tcp_header)
+        conn = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.ntohs(0x0003))
+    except socket.error as msg:
+        print('Socket could not be created. Error Code : ' + str(msg.errno) + ' Message ' + msg.strerror)
+        sys.exit()
 
-        source_port = tcph[0]
-        dest_port = tcph[1]
-        sequence = tcph[2]
-        acknowledgement = tcph[3]
-        doff_reserved = tcph[4]
-        tcph_length = doff_reserved >> 4
+    for cnt in itertools.count():
+        # receive a packet
+        raw_data, addr = conn.recvfrom(65565)
+        print('Receive packet #{} at {}'.format(str(cnt), str(addr[0])))
+        eth = Ethernet(raw_data)
 
-        print("Source port: " + str(source_port))
-        print("Destination port: " + str(dest_port))
-        print("Sequence Number: " + str(sequence))
-        print("Acknowledgement: " + str(acknowledgement))
-        print("TCP Header Length: " + str(tcph_length))
-        print()
+        print('\nEthernet Frame:')
+        print(TAB_1 + 'Destination: {}, Source: {}, Protocol: {}'.format(eth.dest_mac, eth.src_mac, eth.proto))
 
-        h_size = iph_length + tcph_length * 4
-        data_size = len(packet) - h_size
+        # IPv4
+        if eth.proto == 8:
+            ipv4 = IPv4(eth.data)
+            print(TAB_1 + 'IPv4 Packet:')
+            print(TAB_2 + 'Version: {}, Header Length: {}, TTL: {},'.format(ipv4.version, ipv4.header_length, ipv4.ttl))
+            print(TAB_2 + 'Protocol: {}, Source: {}, Target: {}'.format(ipv4.proto, ipv4.src, ipv4.target))
 
-        # get data from the packet
-        data = packet[h_size:]
+            if ipv4.proto == 6:
+                tcp = TCP(ipv4.data)
+                print(TAB_1 + 'TCP Segment:')
+                print(TAB_2 + 'Source Port: {}, Destination Port: {}'.format(tcp.src_port, tcp.dest_port))
+                print(TAB_2 + 'Sequence: {}, Acknowledgment: {}'.format(tcp.sequence, tcp.acknowledgment))
+                print(TAB_2 + 'Flags:')
+                print(TAB_3 + 'URG: {}, ACK: {}, PSH: {}'.format(tcp.flag_urg, tcp.flag_ack, tcp.flag_psh))
+                print(TAB_3 + 'RST: {}, SYN: {}, FIN:{}'.format(tcp.flag_rst, tcp.flag_syn, tcp.flag_fin))
 
-        print("Data: " + str(data))
-        print()
-    except:
-        data = packet[iph_length:]
-        print("Data: " + str(data))
-        print()
+main()
