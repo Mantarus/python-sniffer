@@ -17,8 +17,7 @@ DATA_TAB_4 = '\t\t\t\t   '
 
 
 def main():
-    # create a AF_PACKET type raw socket (thats basically packet level)
-    # define ETH_P_ALL    0x0003          /* Every packet (be careful!!!) */
+
     try:
         conn = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.ntohs(0x0003))
     except socket.error as msg:
@@ -26,23 +25,22 @@ def main():
         sys.exit()
 
     for cnt in itertools.count():
-        # receive a packet
         raw_data, addr = conn.recvfrom(65565)
         print('Receive packet #{} at {}'.format(str(cnt), str(addr[0])))
         eth = Ethernet(raw_data)
 
-        print('\nEthernet Frame:')
-        print(TAB_1 + 'Destination: {}, Source: {}, Protocol: {}'.format(eth.dest_mac, eth.src_mac, eth.proto))
 
         # IPv4
         if eth.proto == 8:
             ipv4 = IPv4(eth.data)
-            print(TAB_1 + 'IPv4 Packet:')
-            print(TAB_2 + 'Version: {}, Header Length: {}, TTL: {},'.format(ipv4.version, ipv4.header_length, ipv4.ttl))
-            print(TAB_2 + 'Protocol: {}, Source: {}, Target: {}'.format(ipv4.proto, ipv4.src, ipv4.target))
 
             if ipv4.proto == 6:
                 tcp = TCP(ipv4.data)
+                print('\nEthernet Frame:')
+                print(TAB_1 + 'Destination: {}, Source: {}, Protocol: {}'.format(eth.dest_mac, eth.src_mac, eth.proto))
+                print(TAB_1 + 'IPv4 Packet:')
+                print(TAB_2 + 'Version: {}, Header Length: {}, TTL: {},'.format(ipv4.version, ipv4.header_length, ipv4.ttl))
+                print(TAB_2 + 'Protocol: {}, Source: {}, Target: {}'.format(ipv4.proto, ipv4.src, ipv4.target))
                 print(TAB_1 + 'TCP Segment:')
                 print(TAB_2 + 'Source Port: {}, Destination Port: {}'.format(tcp.src_port, tcp.dest_port))
                 print(TAB_2 + 'Sequence: {}, Acknowledgment: {}'.format(tcp.sequence, tcp.acknowledgment))
