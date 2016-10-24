@@ -1,5 +1,7 @@
 import struct
 
+from general import *
+
 
 class IPv4:
 
@@ -15,3 +17,10 @@ class IPv4:
     # Returns properly formatted IPv4 address
     def ipv4(self, addr):
         return '.'.join(map(str, addr))
+
+    def print_header(self, prefix):
+        print(prefix + 'IPv4 Packet:')
+        print(prefix + TAB_1 + 'Version: {}, Header Length: {}, TTL: {},'
+              .format(self.version, self.header_length, self.ttl))
+        print(prefix + TAB_1 + 'Protocol: {}, Source: {}, Target: {}'
+              .format(self.proto, self.src, self.target))

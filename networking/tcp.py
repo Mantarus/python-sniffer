@@ -1,5 +1,7 @@
 import struct
 
+from general import *
+
 
 class TCP:
 
@@ -14,3 +16,15 @@ class TCP:
         self.flag_syn = (offset_reserved_flags & 2) >> 1
         self.flag_fin = offset_reserved_flags & 1
         self.data = raw_data[offset:]
+
+    def print_header(self, prefix):
+        print(prefix + 'TCP Segment:')
+        print(prefix + TAB_1 + 'Source Port: {}, Destination Port: {}'
+              .format(self.src_port, self.dest_port))
+        print(prefix + TAB_1 + 'Sequence: {}, Acknowledgment: {}'
+              .format(self.sequence, self.acknowledgment))
+        print(prefix + TAB_1 + 'Flags:')
+        print(prefix + TAB_2 + 'URG: {}, ACK: {}, PSH: {}'
+              .format(self.flag_urg, self.flag_ack, self.flag_psh))
+        print(prefix + TAB_2 + 'RST: {}, SYN: {}, FIN:{}'
+              .format(self.flag_rst, self.flag_syn, self.flag_fin))
