@@ -17,14 +17,10 @@ class TCP:
         self.flag_fin = offset_reserved_flags & 1
         self.data = raw_data[offset:]
 
-    def print_header(self, prefix):
-        print(prefix + 'TCP Segment:')
-        print(prefix + TAB_1 + 'Source Port: {}, Destination Port: {}'
-              .format(self.src_port, self.dest_port))
-        print(prefix + TAB_1 + 'Sequence: {}, Acknowledgment: {}'
-              .format(self.sequence, self.acknowledgment))
-        print(prefix + TAB_1 + 'Flags:')
-        print(prefix + TAB_2 + 'URG: {}, ACK: {}, PSH: {}'
-              .format(self.flag_urg, self.flag_ack, self.flag_psh))
-        print(prefix + TAB_2 + 'RST: {}, SYN: {}, FIN:{}'
-              .format(self.flag_rst, self.flag_syn, self.flag_fin))
+    def __repr__(self):
+        return 'TCP Segment:\n' + \
+               'Source Port: {}, Destination Port: {}\n'.format(self.src_port, self.dest_port) + \
+               TAB_1 + 'Sequence: {}, Acknowledgment: {}\n'.format(self.sequence, self.acknowledgment) + \
+               TAB_1 + 'Flags:\n' + \
+               TAB_2 + 'URG: {}, ACK: {}, PSH: {}\n'.format(self.flag_urg, self.flag_ack, self.flag_psh) + \
+               TAB_2 + 'RST: {}, SYN: {}, FIN:{}\n'.format(self.flag_rst, self.flag_syn, self.flag_fin)

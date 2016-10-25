@@ -1,15 +1,11 @@
-import struct
-
-from general import *
-
-
 class VNC:
+    ports = range(5900, 5907)
     
     def __init__(self, raw_data):
         self.data = raw_data
     
-    def print(self, prefix):
-        print(prefix + self.data)
+    def __repr__(self):
+        return self.data
 
 
 class VNCProtocolVersion(VNC):
@@ -18,6 +14,6 @@ class VNCProtocolVersion(VNC):
         super().__init__(raw_data)
         self.data = raw_data.decode('utf-8')
 
-    def print(self, prefix):
-        print(prefix + 'VNC Packet:')
-        print(prefix + 'VNC Protocol Version: {}'.format(self.data))
+    def __repr__(self):
+        return 'VNC Packet:\n' + \
+              'VNC Protocol Version: {}\n'.format(self.data)

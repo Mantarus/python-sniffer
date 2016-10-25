@@ -13,7 +13,7 @@ class Ethernet:
         self.proto = socket.htons(prototype)
         self.data = raw_data[14:]
 
-    def print_header(self, prefix):
-        print(prefix + '\nEthernet Frame:')
-        print(prefix + TAB_1 + 'Destination: {}, Source: {}, Protocol: {}'.
-              format(self.dest_mac, self.src_mac, self.proto))
+    def __repr__(self):
+        return 'Ethernet Frame:\n' + \
+               TAB_1 + 'Destination: {}, Source: {}, Protocol: {}\n'\
+                       .format(self.dest_mac, self.src_mac, self.proto)

@@ -18,9 +18,9 @@ class IPv4:
     def ipv4(self, addr):
         return '.'.join(map(str, addr))
 
-    def print_header(self, prefix):
-        print(prefix + 'IPv4 Packet:')
-        print(prefix + TAB_1 + 'Version: {}, Header Length: {}, TTL: {},'
-              .format(self.version, self.header_length, self.ttl))
-        print(prefix + TAB_1 + 'Protocol: {}, Source: {}, Target: {}'
-              .format(self.proto, self.src, self.target))
+    def __repr__(self):
+        return 'IPv4 Packet:\n' + \
+               TAB_1 + 'Version: {}, Header Length: {}, TTL: {},\n'\
+                       .format(self.version, self.header_length, self.ttl) + \
+               TAB_1 + 'Protocol: {}, Source: {}, Target: {}\n'\
+                       .format(self.proto, self.src, self.target)
