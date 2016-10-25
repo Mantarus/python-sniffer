@@ -5,6 +5,7 @@ from general import *
 from networking.ethernet import Ethernet
 from networking.ipv4 import IPv4
 from networking.tcp import TCP
+from networking.vnc import *
 
 
 def main():
@@ -27,9 +28,13 @@ def main():
             # TCP
             if ipv4.proto == 6:
                 tcp = TCP(ipv4.data)
-                eth.print_header('')
-                ipv4.print_header('')
-                tcp.print_header('')
-                print()
+
+                if len(tcp.data) == 12:
+                    vnc = VNCProtocolVersion(tcp.data)
+                    eth.print_header('')
+                    ipv4.print_header('')
+                    tcp.print_header('')
+                    vnc.print('')
+                    print()
 
 main()
