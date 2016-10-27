@@ -34,11 +34,18 @@ def main():
 
                 if tcp.dest_port in VNC.ports or tcp.src_port in VNC.ports:
                     print('Probably VNC Packet!')
-                if len(tcp.data) == 12:
-                    vnc = VNCProtocolVersion(tcp.data)
-                    packet.append(vnc)
-                    for item in packet:
-                        print(item)
+                    print('SRC IP: {} DST IP {}\nSRC PORT: {} DEST PORT: {}'\
+                          .format(ipv4.src, ipv4.target, tcp.src_port, tcp.dest_port))
+                try:
+                    tcp.data.decode('utf-8')
+                except:
+                    print('Can\'t decode tcp data as utf-8!')
+                else:
+                    if len(tcp.data) == 12 and tcp.data.decode('utf-8')[:3] == 'RFB':
+                        vnc = VNCProtocolVersion(tcp.data)
+                        packet.append(vnc)
+                        for item in packet:
+                            print(item)
 
                 print()
 
