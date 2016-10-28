@@ -33,10 +33,10 @@ def main():
                 tcp = TCP(ipv4.data)
                 packet.append(tcp)
 
-                if tcp.dest_port in VNC.ports or tcp.src_port in VNC.ports:
-                    print('Probably VNC Packet!')
-                    print('SRC IP: {} DST IP {}\nSRC PORT: {} DEST PORT: {}'\
-                          .format(ipv4.src, ipv4.target, tcp.src_port, tcp.dest_port))
+                # if tcp.dest_port in VNC.ports or tcp.src_port in VNC.ports:
+                #     print('Probably VNC Packet!')
+                #     print('SRC IP: {} DST IP {}\nSRC PORT: {} DEST PORT: {}'\
+                #           .format(ipv4.src, ipv4.target, tcp.src_port, tcp.dest_port))
 
                 mapped = False
 
@@ -51,14 +51,26 @@ def main():
                             packet.append(vnc)
                             for item in packet:
                                 print(item)
-                            mapped = True
+                        mapped = True
 
                 if not mapped:
                     try:
                         message_type = struct.unpack('! B', tcp.data[:1])[0]
                         if message_type <= 6:
-                            print('Probably Client message!')
-                            print('Type: {} Length: {}'.format(message_type, len(tcp.data)))
+                        #     print('Probably Client message!')
+                             print('Type: {} Length: {}'.format(message_type, len(tcp.data)))
+                        if message_type == 0 and len(tcp.data) >= 16:
+                            try:
+                                struct.unpack('! x H H H H H l', tcp.data[1:16])
+                            except:
+                                raise Exception('Can\'t decode message as FramebufferUpdate message!')
+                            else:
+                                print('FramebufferUpdate message')
+                                rect_num, x_pos, y_pos, width, height, encoding = struct.unpack('! x H H H H H l', tcp.data[1:16])
+                                print('Number of rectangles: {}'.format(rect_num))
+                                print('X Pos: {} Y Pos: {}'.format(x_pos, y_pos))
+                                print('Width: {} Height: {}'.format(width, height))
+                                print('Encoding type: {}'.format(encoding))
                         if message_type == 0 and len(tcp.data) == 20:
                             print('Probably SetPixelFormat message!')
                             mapped = True
@@ -87,14 +99,14 @@ def main():
                                 print('Down flag: {}\nKey hex code: {}'\
                                       .format(bool(down_flag), hex(key)))
                                 mapped = True
-                        elif message_type == 5 and len(tcp.data) == 6:
+                        elif message_type == 5 and (len(tcp.data) == 6 or len(tcp.data) == 12):
                             try:
-                                struct.unpack('! B H H', tcp.data[1:])
+                                struct.unpack('! B H H', tcp.data[1:6])
                             except:
                                 raise Exception('Can\'t decode message as PointerEvent message!')
                             else:
                                 print('PointerEvent message:')
-                                button, x_pos, y_pos = struct.unpack('! B H H', tcp.data[1:])
+                                button, x_pos, y_pos = struct.unpack('! B H H', tcp.data[1:6])
                                 if button != 0:
                                     print('Mouse button pressed: {}'.format(button))
                                 print('X Pos: {} Y Pos: {}'.format(x_pos, y_pos))
