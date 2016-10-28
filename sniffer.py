@@ -19,7 +19,7 @@ def main():
     for cnt in itertools.count():
         raw_data, addr = conn.recvfrom(65565)
         packet = []
-        print('Receive packet #{} at {}'.format(str(cnt), str(addr[0])))
+        # print('Receive packet #{} at {}'.format(str(cnt), str(addr[0])))
         eth = Ethernet(raw_data)
         packet.append(eth)
 
@@ -35,8 +35,12 @@ def main():
 
                 # if tcp.dest_port in VNC.ports or tcp.src_port in VNC.ports:
                 #     print('Probably VNC Packet!')
-                #     print('SRC IP: {} DST IP {}\nSRC PORT: {} DEST PORT: {}'\
-                #           .format(ipv4.src, ipv4.target, tcp.src_port, tcp.dest_port))
+                #     print('SRC IP: {} SRC Port: {} DST IP: {} DST PORT: {}'
+                #           .format(ipv4.src, tcp.src_port, ipv4.target, tcp.dest_port))
+
+                print('SRC IP: {} SRC Port: {} DST IP: {} DST Port: {}'
+                      .format(ipv4.src, tcp.src_port, ipv4.target, tcp.dest_port))
+                print('Data length: {}'.format(len(tcp.data)))
 
                 mapped = False
 
@@ -48,18 +52,18 @@ def main():
                     else:
                         if len(tcp.data) == 12 and tcp.data.decode('utf-8')[:3] == 'RFB':
                             vnc = VNCProtocolVersion(tcp.data)
-                            packet.append(vnc)
-                            for item in packet:
-                                print(item)
+                            print('Protocol version message:')
+                            print('Version: {}'.format(vnc.data))
                         mapped = True
 
                 if not mapped:
                     try:
                         message_type = struct.unpack('! B', tcp.data[:1])[0]
-                        if message_type <= 6:
-                        #     print('Probably Client message!')
-                             print('Type: {} Length: {}'.format(message_type, len(tcp.data)))
+                        # if message_type <= 6:
+                        #      print('Probably Client message!')
+                        #      print('Type: {} Length: {}'.format(message_type, len(tcp.data)))
                         if message_type == 0 and len(tcp.data) >= 16:
+                            # FramebufferUpdate
                             try:
                                 struct.unpack('! x H H H H H l', tcp.data[1:16])
                             except:
@@ -72,12 +76,15 @@ def main():
                                 print('Width: {} Height: {}'.format(width, height))
                                 print('Encoding type: {}'.format(encoding))
                         if message_type == 0 and len(tcp.data) == 20:
+                            # SetPixelFormat
                             print('Probably SetPixelFormat message!')
                             mapped = True
                         elif message_type == 2 and len(tcp.data) == 4:
+                            # SetEncodings
                             print('Probably SetEncodings message!')
                             mapped = True
                         elif message_type == 3 and len(tcp.data) == 10:
+                            # FramebufferUpdateRequest
                             try:
                                 struct.unpack('! B H H H H', tcp.data[1:])
                             except:
@@ -85,10 +92,11 @@ def main():
                             else:
                                 print('FramebufferUpdateRequest message:')
                                 incr, x_pos, y_pos, width, height = struct.unpack('! B H H H H', tcp.data[1:])
-                                print('Incremental: {}\nX Pos: {}\nY Pos: {}\nWidth: {}\nHeight: {}'\
+                                print('Incremental: {}\nX Pos: {} Y Pos: {}\nWidth: {} Height: {}'\
                                       .format(bool(incr), int(x_pos), int(y_pos), int(width), int(height)))
                                 mapped = True
                         elif message_type == 4 and len(tcp.data) == 8:
+                            # KeyEvent
                             try:
                                 struct.unpack('! B 2x I', tcp.data[1:])
                             except:
@@ -96,10 +104,11 @@ def main():
                             else:
                                 print('KeyEvent message:')
                                 down_flag, key = struct.unpack('! B 2x I', tcp.data[1:])
-                                print('Down flag: {}\nKey hex code: {}'\
+                                print('Down flag: {} Key hex code: {}'\
                                       .format(bool(down_flag), hex(key)))
                                 mapped = True
                         elif message_type == 5 and (len(tcp.data) == 6 or len(tcp.data) == 12):
+                            # PointerEvent
                             try:
                                 struct.unpack('! B H H', tcp.data[1:6])
                             except:
@@ -112,6 +121,7 @@ def main():
                                 print('X Pos: {} Y Pos: {}'.format(x_pos, y_pos))
                                 mapped = True
                         elif message_type == 6:
+                            # ClientCutText
                             print('Probably ClientCutText message!')
                             mapped = True
                     except Exception as e:
