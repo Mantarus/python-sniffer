@@ -44,18 +44,21 @@ def main():
                     try:
                         tcp.data.decode('utf-8')
                     except:
-                        print('Can\'t decode tcp data as utf-8!')
+                        pass
                     else:
-                        mapped = True
                         if len(tcp.data) == 12 and tcp.data.decode('utf-8')[:3] == 'RFB':
                             vnc = VNCProtocolVersion(tcp.data)
                             packet.append(vnc)
                             for item in packet:
                                 print(item)
+                            mapped = True
 
                 if not mapped:
                     try:
                         message_type = struct.unpack('! B', tcp.data[:1])[0]
+                        if message_type <= 6:
+                            print('Probably Client message!')
+                            print('Type: {} Length: {}'.format(message_type, len(tcp.data)))
                         if message_type == 0 and len(tcp.data) == 20:
                             print('Probably SetPixelFormat message!')
                             mapped = True
@@ -63,37 +66,44 @@ def main():
                             print('Probably SetEncodings message!')
                             mapped = True
                         elif message_type == 3 and len(tcp.data) == 10:
-                            print('Probably FramebufferUpdateRequest message!')
                             try:
                                 struct.unpack('! B H H H H', tcp.data[1:])
                             except:
-                                raise Exception
+                                raise Exception('Can\'t decode message as FramebufferUpdateRequest message!')
                             else:
-                                print('FramebufferUpdateRequest:')
+                                print('FramebufferUpdateRequest message:')
                                 incr, x_pos, y_pos, width, height = struct.unpack('! B H H H H', tcp.data[1:])
                                 print('Incremental: {}\nX Pos: {}\nY Pos: {}\nWidth: {}\nHeight: {}'\
                                       .format(bool(incr), int(x_pos), int(y_pos), int(width), int(height)))
                                 mapped = True
-                        elif message_type == 4 and len(tcp.data) == 10:
-                            print('Probably KeyEvent message!')
+                        elif message_type == 4 and len(tcp.data) == 8:
                             try:
-                                struct.unpack('! B x x I', tcp.data[1:])
+                                struct.unpack('! B 2x I', tcp.data[1:])
                             except:
-                                raise Exception
+                                raise Exception('Can\'t decode message as KeyEvent message!')
                             else:
-                                print('KeyEvent:')
-                                down_flag, key = struct.unpack('! B x x I', tcp.data[1:])
-                                print('Down flag: {}\nKey '\
-                                      .format(bool(down_flag), str(key)))
-                            mapped = True
+                                print('KeyEvent message:')
+                                down_flag, key = struct.unpack('! B 2x I', tcp.data[1:])
+                                print('Down flag: {}\nKey hex code: {}'\
+                                      .format(bool(down_flag), hex(key)))
+                                mapped = True
                         elif message_type == 5 and len(tcp.data) == 6:
-                            print('Probably PointerEvent message!')
-                            mapped = True
+                            try:
+                                struct.unpack('! B H H', tcp.data[1:])
+                            except:
+                                raise Exception('Can\'t decode message as PointerEvent message!')
+                            else:
+                                print('PointerEvent message:')
+                                button, x_pos, y_pos = struct.unpack('! B H H', tcp.data[1:])
+                                if button != 0:
+                                    print('Mouse button pressed: {}'.format(button))
+                                print('X Pos: {} Y Pos: {}'.format(x_pos, y_pos))
+                                mapped = True
                         elif message_type == 6:
                             print('Probably ClientCutText message!')
                             mapped = True
-                    except:
-                        print('Can\'t decode message!')
+                    except Exception as e:
+                        print('Unexpected error: {}'.format(e))
 
                     print()
 
