@@ -1,7 +1,8 @@
-import socket
-import sys
 import itertools
+import socket
 import struct
+import sys
+
 from networking.ethernet import Ethernet
 from networking.ipv4 import IPv4
 from networking.tcp import TCP
@@ -53,74 +54,57 @@ def main():
                         if len(tcp.data) == 12 and tcp.data.decode('utf-8')[:3] == 'RFB':
                             vnc = VNCProtocolVersion(tcp.data)
                             print('Protocol version message:')
-                            print('Version: {}'.format(vnc.data))
+                            print('Version: {}'.format(vnc.version))
                         mapped = True
 
                 if not mapped:
                     try:
-                        message_type = struct.unpack('! B', tcp.data[:1])[0]
-                        # if message_type <= 6:
-                        #      print('Probably Client message!')
-                        #      print('Type: {} Length: {}'.format(message_type, len(tcp.data)))
-                        if message_type == 0 and len(tcp.data) >= 16:
+                        vnc = VNCClientMessage(tcp.data)
+                        if vnc.message_code == 0 and len(tcp.data) >= 16:
                             # FramebufferUpdate
                             try:
-                                struct.unpack('! x H H H H H l', tcp.data[1:16])
+                                vnc_cm = VNCFrameBufferUpdateMessage(tcp.data)
                             except:
                                 raise Exception('Can\'t decode message as FramebufferUpdate message!')
                             else:
-                                print('FramebufferUpdate message')
-                                rect_num, x_pos, y_pos, width, height, encoding = struct.unpack('! x H H H H H l', tcp.data[1:16])
-                                print('Number of rectangles: {}'.format(rect_num))
-                                print('X Pos: {} Y Pos: {}'.format(x_pos, y_pos))
-                                print('Width: {} Height: {}'.format(width, height))
-                                print('Encoding type: {}'.format(encoding))
-                        if message_type == 0 and len(tcp.data) == 20:
+                                print(vnc_cm)
+                                mapped = True
+                        if vnc.message_code == 0 and len(tcp.data) == 20:
                             # SetPixelFormat
                             print('Probably SetPixelFormat message!')
                             mapped = True
-                        elif message_type == 2 and len(tcp.data) == 4:
+                        elif vnc.message_code == 2 and len(tcp.data) == 4:
                             # SetEncodings
                             print('Probably SetEncodings message!')
                             mapped = True
-                        elif message_type == 3 and len(tcp.data) == 10:
+                        elif vnc.message_code == 3 and len(tcp.data) == 10:
                             # FramebufferUpdateRequest
                             try:
-                                struct.unpack('! B H H H H', tcp.data[1:])
+                                vnc_cm = VNCFrameBufferUpdateRequestMessage(tcp.data)
                             except:
                                 raise Exception('Can\'t decode message as FramebufferUpdateRequest message!')
                             else:
-                                print('FramebufferUpdateRequest message:')
-                                incr, x_pos, y_pos, width, height = struct.unpack('! B H H H H', tcp.data[1:])
-                                print('Incremental: {}\nX Pos: {} Y Pos: {}\nWidth: {} Height: {}'\
-                                      .format(bool(incr), int(x_pos), int(y_pos), int(width), int(height)))
+                                print(vnc_cm)
                                 mapped = True
-                        elif message_type == 4 and len(tcp.data) == 8:
+                        elif vnc.message_code == 4 and len(tcp.data) == 8:
                             # KeyEvent
                             try:
-                                struct.unpack('! B 2x I', tcp.data[1:])
+                                vnc_cm = VNCKeyEventMessage(tcp.data)
                             except:
                                 raise Exception('Can\'t decode message as KeyEvent message!')
                             else:
-                                print('KeyEvent message:')
-                                down_flag, key = struct.unpack('! B 2x I', tcp.data[1:])
-                                print('Down flag: {} Key hex code: {}'\
-                                      .format(bool(down_flag), hex(key)))
+                                print(vnc_cm)
                                 mapped = True
-                        elif message_type == 5 and (len(tcp.data) == 6 or len(tcp.data) == 12):
+                        elif vnc.message_code == 5 and (len(tcp.data) == 6 or len(tcp.data) == 12):
                             # PointerEvent
                             try:
-                                struct.unpack('! B H H', tcp.data[1:6])
+                                vnc_cm = VNCPointerEventMessage(tcp.data)
                             except:
                                 raise Exception('Can\'t decode message as PointerEvent message!')
                             else:
-                                print('PointerEvent message:')
-                                button, x_pos, y_pos = struct.unpack('! B H H', tcp.data[1:6])
-                                if button != 0:
-                                    print('Mouse button pressed: {}'.format(button))
-                                print('X Pos: {} Y Pos: {}'.format(x_pos, y_pos))
+                                print(vnc_cm)
                                 mapped = True
-                        elif message_type == 6:
+                        elif vnc.message_code == 6:
                             # ClientCutText
                             print('Probably ClientCutText message!')
                             mapped = True
@@ -132,4 +116,5 @@ def main():
 
                 print()
 
-main()
+if __name__ == '__main__':
+    main()
