@@ -2,7 +2,7 @@ import struct
 
 
 class VNC:
-    header = 'VNC Packet:\n'
+    header = 'VNC Packet\n'
     ports = range(5900, 5907)
 
     def __init__(self, raw_data):
@@ -13,7 +13,7 @@ class VNC:
 
 
 class VNCProtocolVersion(VNC):
-    header = 'VNC Protocol Version Packet:\n'
+    header = 'VNC Protocol Version Packet\n'
 
     def __init__(self, raw_data):
         super().__init__(raw_data)
@@ -26,7 +26,7 @@ class VNCProtocolVersion(VNC):
 
 
 class VNCClientMessage(VNC):
-    header = 'VNC Client Message Packet:\n'
+    header = 'VNC Client Message Packet\n'
 
     def __init__(self, raw_data):
         super().__init__(raw_data)
@@ -39,7 +39,7 @@ class VNCClientMessage(VNC):
 
 
 class VNCFrameBufferUpdateMessage(VNCClientMessage):
-    header = 'VNC Framebuffer Update Message Packet:\n'
+    header = 'VNC Framebuffer Update Message Packet\n'
 
     def __init__(self, raw_data):
         super().__init__(raw_data)
@@ -55,7 +55,7 @@ class VNCFrameBufferUpdateMessage(VNCClientMessage):
 
 
 class VNCFrameBufferUpdateRequestMessage(VNCClientMessage):
-    header = 'VNC Framebuffer Update Request Message Packet:\n'
+    header = 'VNC Framebuffer Update Request Message Packet\n'
 
     def __init__(self, raw_data):
         super().__init__(raw_data)
@@ -70,7 +70,7 @@ class VNCFrameBufferUpdateRequestMessage(VNCClientMessage):
 
 
 class VNCKeyEventMessage(VNCClientMessage):
-    header = 'VNC Key Event Message:\n'
+    header = 'VNC Key Event Message\n'
 
     def __init__(self, raw_data):
         super().__init__(raw_data)
@@ -82,7 +82,7 @@ class VNCKeyEventMessage(VNCClientMessage):
 
 
 class VNCPointerEventMessage(VNCClientMessage):
-    header = 'VNC Pointer Event Message:\n'
+    header = 'VNC Pointer Event Message\n'
 
     def __init__(self, raw_data):
         super().__init__(raw_data)
