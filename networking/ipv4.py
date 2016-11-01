@@ -20,7 +20,7 @@ class IPv4:
 
     def __repr__(self):
         return 'IPv4 Packet:\n' + \
-               TAB_1 + 'Version: {}, Header Length: {}, TTL: {},\n'\
-                       .format(self.version, self.header_length, self.ttl) + \
-               TAB_1 + 'Protocol: {}, Source: {}, Target: {}\n'\
-                       .format(self.proto, self.src, self.target)
+               'Version: {}, Header Length: {}, TTL: {},\n'\
+               .format(self.version, self.header_length, self.ttl) + \
+               'Protocol: {}, Source: {}, Target: {}\n'\
+               .format(self.proto, self.src, self.target)

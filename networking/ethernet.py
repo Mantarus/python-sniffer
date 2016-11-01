@@ -16,5 +16,5 @@ class Ethernet:
 
     def __repr__(self):
         return 'Ethernet Frame:\n' + \
-               TAB_1 + 'Destination: {}, Source: {}, Protocol: {}\n'\
-                       .format(self.dest_mac, self.src_mac, self.proto)
+               'Destination MAC: {} Source MAC: {}\nProtocol: {}\n'\
+                .format(self.dest_mac, self.src_mac, self.proto)

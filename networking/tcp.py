@@ -19,8 +19,8 @@ class TCP:
 
     def __repr__(self):
         return 'TCP Segment:\n' + \
-               'Source Port: {}, Destination Port: {}\n'.format(self.src_port, self.dest_port) + \
-               TAB_1 + 'Sequence: {}, Acknowledgment: {}\n'.format(self.sequence, self.acknowledgment) + \
-               TAB_1 + 'Flags:\n' + \
-               TAB_2 + 'URG: {}, ACK: {}, PSH: {}\n'.format(self.flag_urg, self.flag_ack, self.flag_psh) + \
-               TAB_2 + 'RST: {}, SYN: {}, FIN:{}\n'.format(self.flag_rst, self.flag_syn, self.flag_fin)
+               'Source Port: {} Destination Port: {}\n'.format(self.src_port, self.dest_port) + \
+               'Sequence: {} Acknowledgment: {}\n'.format(self.sequence, self.acknowledgment) + \
+               'Flags:\n' + \
+               'URG: {} ACK: {} PSH: {}\n'.format(self.flag_urg, self.flag_ack, self.flag_psh) + \
+               'RST: {} SYN: {} FIN: {}\n'.format(self.flag_rst, self.flag_syn, self.flag_fin)
